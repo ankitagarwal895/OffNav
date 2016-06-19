@@ -8,9 +8,9 @@ public class ModelDirection {
 
     public String content;
     public String distance;
-    public String flag;
+    public int flag;
 
-    public ModelDirection(String content, String distance, String flag) {
+    public ModelDirection(String content, String distance, int flag) {
         this.content = content;
         this.distance = distance;
         this.flag = flag;

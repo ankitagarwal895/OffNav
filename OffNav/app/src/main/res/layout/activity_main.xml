@@ -38,6 +38,7 @@
 
 
                 <com.zriton.offnav.widgets.TypefacedEditText
+                    android:id="@+id/source"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="40dp"
@@ -63,6 +64,7 @@
 
 
                 <com.zriton.offnav.widgets.TypefacedEditText
+                    android:id="@+id/destination"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="16dp"
@@ -81,10 +83,22 @@
     </android.support.v7.widget.CardView>
 
     <com.zriton.offnav.widgets.TypefacedButton
+        android:id="@+id/gps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Use GPS?"
+        android:layout_marginTop="8dp"
+        android:layout_gravity="center"
+        android:textColor="@color/colorAccent"
+        style="?attr/borderlessButtonStyle"
+        app:fontStyle="thin"/>
+
+    <com.zriton.offnav.widgets.TypefacedButton
+        android:id="@+id/sendSMS"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:background="@color/colorAccent"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="8dp"
         android:layout_marginRight="16dp"
         android:layout_marginLeft="16dp"
         android:text="GO OffNav!"
@@ -102,6 +116,38 @@
         android:layout_marginRight="16dp">
 
     </android.support.v7.widget.RecyclerView>
+
+    <RelativeLayout
+        android:id="@+id/errorLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:visibility="gone"
+        android:layout_marginRight="16dp">
+
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/map_marker_off"
+            android:layout_centerVertical="true"/>
+
+
+        <com.zriton.offnav.widgets.TypefacedTextView
+            android:id="@+id/reason"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/icon"
+            android:text="Destination"
+            android:layout_marginTop="8dp"
+            android:textSize="22sp"
+            android:gravity="center"
+            android:textColor="@color/colorPrimaryDark"
+            app:fontStyle="medium"/>
+
+    </RelativeLayout>
 
 
 
