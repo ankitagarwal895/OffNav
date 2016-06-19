@@ -27,6 +27,14 @@ public class DirectionAdapter extends RecyclerView.Adapter<DirectionAdapter.View
         this.modelDirectionArrayList = modelDirectionArrayList;
     }
 
+
+    public void swap(ArrayList<ModelDirection> result)
+    {
+        modelDirectionArrayList.clear();
+        modelDirectionArrayList.addAll(result);
+        notifyDataSetChanged();
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext())
@@ -37,8 +45,24 @@ public class DirectionAdapter extends RecyclerView.Adapter<DirectionAdapter.View
     @Override
     public void onBindViewHolder(final ViewHolder holder,final int i) {
         modelMessage = modelDirectionArrayList.get(i);
-        holder.distance.setText(modelMessage.distance);
-        holder.content.setText(modelMessage.content);
+        holder.content.setText(modelMessage.content+"\n"+modelMessage.distance + " m");
+        if(modelMessage.content.contains("Left"))
+        {
+            holder.icon.setImageResource(R.drawable.arrow_left);
+        }
+        else if(modelMessage.content.contains("Right"))
+        {
+            holder.icon.setImageResource(R.drawable.arrow_right);
+        }
+        else if(modelMessage.content.contains("Head"))
+        {
+            holder.icon.setImageResource(R.drawable.arrow_left);
+        }
+        else
+        {
+            holder.icon.setImageResource(R.drawable.map_marker);
+        }
+        holder.icon.invalidate();
 
     }
 
@@ -50,14 +74,13 @@ public class DirectionAdapter extends RecyclerView.Adapter<DirectionAdapter.View
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView content,distance;
-        private ImageView image;
+        private TextView content;
+        private ImageView icon;
 
         public ViewHolder(View view) {
             super(view);
             content = (TextView) view.findViewById(R.id.content);
-            distance = (TextView) view.findViewById(R.id.distance);
-            image = (ImageView) view.findViewById(R.id.image);
+            icon = (ImageView) view.findViewById(R.id.icon);
         }
     }
 
