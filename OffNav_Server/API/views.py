@@ -8,10 +8,10 @@ from requests.auth import HTTPBasicAuth
 import requests
 import json
 import unicodedata
-print unicodedata.normalize('NFKD', u"Turn \u003cb\u003eleft\u003c/b\u003e at \u003cb\u003eASC Jct\u003c/b\u003e onto \u003cb\u003eOld Airport Rd\u003c/b\u003e/\u003cb\u003eThyagi M Palanivelu Rd\u003c/b\u003e\u003cdiv \u003eContinue to follow Old Airport Rd\u003c/div\u003e\u003cdiv \u003ePass by Canara Bank ATM (on the left in 2.1&nbsp;km)\u003c/div\u003e\u003cdiv \u003eDestination will be on the left\u003c/div\u003e").encode('ascii','ignore')
+import re
 
-SID="ACa38fdeeb011037900e62f2b1177ea6ec"
-AUTH_TOKEN="6df2b92c807d6f48fa7aa1794a8b376a"
+SID="AC6b7372a1fe337cfb0729899826c72437"
+AUTH_TOKEN="5321058542de7e19e65441d1efc7b306"
 urls=[]
 urls.append('https://maps.googleapis.com/maps/api/directions/json?origin=')
 urls.append('&destination=')
@@ -26,13 +26,68 @@ def directions(request):
     #print url
     res=requests.get(url)
     parsed_json=json.loads(res.text)
-    distance=int(parsed_json["routes"][0]["legs"][0]["distance"]["value"])
-    data={"Body":distance,"From":"+12513331811","To":a}
-    res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
-    for i in range(len(parsed_json["routes"][0]["legs"][0]["steps"])):
-	    final=str(parsed_json["routes"][0]["legs"][0]["steps"][i]["html_instructions"])
-	    final=final.replace("<b>","");
-	    final=final.replace("</b>","");
-	    data={"Body":final,"From":"+12513331811","To":a}
-	    res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
-    return Response({"success":True})
+    if(parsed_json["status"]=='OK'):
+        limit=len(parsed_json["routes"][0]["legs"][0]["steps"])
+        print limit
+        if(limit<=15):
+            start_add=str(parsed_json["routes"][0]["legs"][0]["start_address"])
+            distance=int(parsed_json["routes"][0]["legs"][0]["distance"]["value"])
+            distance="0."+start_add+'\%'+'%d'%(distance)
+            data={"Body":distance,"From":"+13476503236","To":a}
+            res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
+            count=0
+            for i in range(len(parsed_json["routes"][0]["legs"][0]["steps"])):
+                final=str(parsed_json["routes"][0]["legs"][0]["steps"][i]["html_instructions"])
+                final=final.replace("<b>","");
+                final=final.replace("</b>","");
+                final=final.replace("&nbsp;","");
+                final = re.sub(r"</?div.*?>", "", final)
+                #shortening message
+                final=re.sub("head", "@H", final, flags=re.I)
+                final=re.sub("north", "@N", final, flags=re.I)
+                final=re.sub("towards", "@2", final, flags=re.I)
+                final=re.sub("turn", "@T", final, flags=re.I)
+                final=re.sub("left", "@L", final, flags=re.I)
+                final=re.sub("onto", "@O", final, flags=re.I)
+                final=re.sub("right", "@R", final, flags=re.I)
+                final=re.sub("slight right", "@SR", final, flags=re.I)
+
+                if(len(final)>100):
+                    dist=str(parsed_json["routes"][0]["legs"][0]["steps"][i]['distance']['value'])
+                    comp='%d.'%(count+1)+final[:100]+'%'+dist
+                    data={"Body":comp,"From":"+13476503236","To":a}
+                    res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
+                    count+=1
+                    dist=str(parsed_json["routes"][0]["legs"][0]["steps"][i]['distance']['value'])
+                    comp='%d.'%(count+1)+final[100:]+'%'
+                    data={"Body":comp,"From":"++13476503236","To":a}
+                    res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
+                else:
+                    dist=str(parsed_json["routes"][0]["legs"][0]["steps"][i]['distance']['value'])
+                    comp='%d.'%(count+1)+final+'%'+dist
+                    data={"Body":comp,"From":"++13476503236","To":a}
+                    res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
+                count+=1
+            return Response({"success":True})
+        else:
+            distance=int(parsed_json["routes"][0]["legs"][0]["distance"]["value"])
+            distance="-1."
+            data={"Body":distance,"From":"+13476503236","To":a}
+            res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
+            return Response({"error":-1})
+    elif(parsed_json["status"]=='NOT_FOUND'):
+        if(str(parsed_json["geocoded_waypoints"][0]["geocoder_status"])!="OK"):
+            distance="-2."
+            data={"Body":distance,"From":"+13476503236","To":a}
+            res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
+            return Response({"error":-2})
+        elif(str(parsed_json["geocoded_waypoints"][1]["geocoder_status"])!="OK"):
+            distance="-3."
+            data={"Body":distance,"From":"+13476503236","To":a}
+            res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
+            return Response({"error":-3})
+    else:
+        distance="-4."
+        data={"Body":distance,"From":"+13476503236","To":a}
+        res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
+        return Response({"error":-4})
