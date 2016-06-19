@@ -9,8 +9,9 @@ import json
 import unicodedata
 import re
 
-SID="ACc28139bb6fc669e6a844f9b318945108"
-AUTH_TOKEN="95f8576871d3b3dbc33fdcdbd6d09425"
+SID="ACa38fdeeb011037900e62f2b1177ea6ec"
+AUTH_TOKEN="6df2b92c807d6f48fa7aa1794a8b376a"
+number='+12513331811'
 urls=[]
 urls.append('https://maps.googleapis.com/maps/api/directions/json?origin=')
 urls.append('&destination=')
@@ -32,7 +33,7 @@ def directions(request):
             start_add=str(parsed_json["routes"][0]["legs"][0]["start_address"])
             distance=int(parsed_json["routes"][0]["legs"][0]["distance"]["value"])
             distance="0."+start_add+'\%'+'%d'%(distance)
-            data={"Body":distance,"From":"+1256801280","To":a}
+            data={"Body":distance,"From":number,"To":a}
             res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
             count=0
             for i in range(len(parsed_json["routes"][0]["legs"][0]["steps"])):
@@ -54,39 +55,39 @@ def directions(request):
                 if(len(final)>100):
                     dist=str(parsed_json["routes"][0]["legs"][0]["steps"][i]['distance']['value'])
                     comp='%d.'%(count+1)+final[:100]+'%'+dist
-                    data={"Body":comp,"From":"+1256801280","To":a}
+                    data={"Body":comp,"From":number,"To":a}
                     res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
                     count+=1
                     dist=str(parsed_json["routes"][0]["legs"][0]["steps"][i]['distance']['value'])
                     comp='%d.'%(count+1)+final[100:]+'%'
-                    data={"Body":comp,"From":"+1256801280","To":a}
+                    data={"Body":comp,"From":number,"To":a}
                     res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
                 else:
                     dist=str(parsed_json["routes"][0]["legs"][0]["steps"][i]['distance']['value'])
                     comp='%d.'%(count+1)+final+'%'+dist
-                    data={"Body":comp,"From":"+1256801280","To":a}
+                    data={"Body":comp,"From":number,"To":a}
                     res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
                 count+=1
             return Response({"success":True})
         else:
             distance=int(parsed_json["routes"][0]["legs"][0]["distance"]["value"])
             distance="-1."
-            data={"Body":distance,"From":"+1256801280","To":a}
+            data={"Body":distance,"From":number,"To":a}
             res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
             return Response({"error":-1})
     elif(parsed_json["status"]=='NOT_FOUND'):
         if(str(parsed_json["geocoded_waypoints"][0]["geocoder_status"])!="OK"):
             distance="-2."
-            data={"Body":distance,"From":"+1256801280","To":a}
+            data={"Body":distance,"From":number,"To":a}
             res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
             return Response({"error":-2})
         elif(str(parsed_json["geocoded_waypoints"][1]["geocoder_status"])!="OK"):
             distance="-3."
-            data={"Body":distance,"From":"+1256801280","To":a}
+            data={"Body":distance,"From":number,"To":a}
             res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
             return Response({"error":-3})
     else:
         distance="-4."
-        data={"Body":distance,"From":"+1256801280","To":a}
+        data={"Body":distance,"From":number,"To":a}
         res=requests.post('https://api.twilio.com/2010-04-01/Accounts/'+SID+"/Messages.json", auth=HTTPBasicAuth(SID,AUTH_TOKEN),data=data)
         return Response({"error":-4})
